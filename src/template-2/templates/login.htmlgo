@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html ng-app="app1">
+    <head>
+        <link rel="stylesheet"  href="/static/css/bootstrap-reboot.min.css" />
+        <link rel="stylesheet"  href="/static/css/bootstrap.css" />
+    </head>
+    <body>
+        {{template "auth" .}}
+        {{template "registration" .}}
+    </body>
+</html>
+
