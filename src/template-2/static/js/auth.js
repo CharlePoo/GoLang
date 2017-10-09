@@ -28,3 +28,11 @@ appAuth.controller('ctrlReg', function($scope, $http){
         
     };
 });
+
+$( function() {
+    /*$( "#inputBirthdate" ).datepicker({
+      changeMonth: true,
+      changeYear: true,
+      yearRange: "1950:2017"
+    });*/
+  } );

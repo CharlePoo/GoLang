@@ -1,0 +1,13 @@
+.birthDateInputs input{
+    width: 60px;
+}
+
+
+
+.input-invalid {
+    color: red;
+  }
+
+form.ng-invalid{
+    border: none;
+}

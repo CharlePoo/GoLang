@@ -1,32 +1,48 @@
 {{define "registration"}}
-<div style="float:left" class="pull-right">
-    <form class="form-horizontal">
+
+    <form id="registration" name="myForm" ng-controller="ctrlReg" novalidate class="form-horizontal">
         <div class="form-group">
-            <label for="inputEmail3" class="col-sm-2 control-label">Email</label>
+            <label for="inputFirstname" class="col-sm-3 control-label">First Name <span class="input-invalid" ng-show="myForm.FirstName.$error.required">(Required)</span></label>
             <div class="col-sm-10">
-            <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
+                <input type="text" name="FirstName" class="form-control" id="inputFirstname" required ng-model="R.FirstName" placeholder="First Name">
             </div>
         </div>
         <div class="form-group">
-            <label for="inputPassword3" class="col-sm-2 control-label">Password</label>
+            <label for="inputLastname" class="col-sm-3 control-label">Last Name <span class="input-invalid" ng-show="myForm.LastName.$error.required">(Required)</span></label>
             <div class="col-sm-10">
-            <input type="password" class="form-control" id="inputPassword3" placeholder="Password">
+                <input type="text" name="LastName" class="form-control" id="inputLastname" required ng-model="R.LastName"placeholder="Last Name">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-3 control-label">Email <span class="input-invalid" ng-show="myForm.Email.$error.required">(Required)</span></label>
+            <div class="col-sm-10">
+                <input type="email" name="Email" class="form-control" id="inputEmail3" required ng-model="R.Email" placeholder="Email">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputBirthdate" class="col-sm-3 control-label">Birth Date <span class="input-invalid" ng-show="myForm.Birthdate.$error.required">(Required)</span></label>
+            <div class="col-sm-10">
+                <input type="date" name="Birthdate" class="form-control" id="inputBirthdate" required ng-model="R.BirthDate" />
+            </div>
+            
+        </div>
+        <div class="form-group">
+            <label for="inputPassword3" class="col-sm-3 control-label">Password <span class="input-invalid" ng-show="myForm.Password.$error.required">(Required)</span></label>
+            <div class="col-sm-10">
+                <input type="password" name="Password" class="form-control" ng-model="R.Password" required id="inputPassword3" placeholder="Password">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="ConfirmPassword" class="col-sm-4 control-label">Confirm Password <span class="input-invalid" ng-show="myForm.ConfirmPassword.$error.required">(Required)</span></label>
+            <div class="col-sm-10">
+                <input type="password" name="ConfirmPassword" class="form-control" ng-model="R.ConfirmPassword" required id="inputConfirmPassword" placeholder="Confirm Password">
             </div>
         </div>
         <div class="form-group">
             <div class="col-sm-offset-2 col-sm-10">
-            <div class="checkbox">
-                <label>
-                <input type="checkbox"> Remember me
-                </label>
-            </div>
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="col-sm-offset-2 col-sm-10">
-            <button type="submit" class="btn btn-default">Sign in</button>
+                <button type="button" ng-click="SubmitForm()" class="btn btn-default">Register</button>
             </div>
         </div>
     </form>
-</div>
+
 {{end}}

@@ -3,13 +3,19 @@ package main
 //C:\GitHub\GoLang\src\hello
 import (
 	"encoding/gob"
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"text/template"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
+	"golang.org/x/crypto/bcrypt"
 	//"encoding/json"
+	"database/sql"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type course struct {
@@ -29,8 +35,8 @@ type UserDetails struct {
 	ID        int32
 	FirstName string
 	LastName  string
-	UserName  string
 	Email     string
+	Password  string
 	Age       int32
 }
 
@@ -49,16 +55,69 @@ func init() {
 
 func main() {
 
+	//This will initiallize session
 	gob.Register(&UserDetails{})
 	gob.Register(&M{})
 
-	//mux = http.NewServeMux()
-	router.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-
+	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	router.HandleFunc("/", foo)
 	router.HandleFunc("/auth", login)
+	apiRouters()
 
 	http.ListenAndServe(":8080", router)
+
+}
+
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes), err
+}
+
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
+}
+
+func openDB() *sql.DB {
+
+	db, err := sql.Open("mysql",
+		"root:myPassw0rd@tcp(127.0.0.1:3306)/myFile")
+	err = db.Ping()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return db
+}
+
+func apiRouters() {
+	router.HandleFunc("/api/login", apiLogin)
+	router.HandleFunc("/api/register", CreateUserEndPoint).Methods("POST")
+	router.HandleFunc("/api/register", CreateUserEndPoint).Methods("POST")
+}
+
+func CreateUserEndPoint(w http.ResponseWriter, req *http.Request) {
+	var uDetails UserDetails
+	_ = json.NewDecoder(req.Body).Decode(&uDetails)
+	uDetails.ID = 1
+	uDetails.Age = 2
+	fmt.Println(uDetails.FirstName)
+	//people = append(people, person)
+	//json.NewEncoder(w).Encode(people)
+
+	hash, _ := HashPassword(uDetails.Password)
+
+	db := openDB()
+	insert, err := db.Query("INSERT INTO user(ID,FirstName,LastName,Email,Age) VALUES(?, ?, ?, ?, ?  )", 3, uDetails.FirstName, uDetails.LastName, uDetails.Email, hash, 0)
+	defer insert.Close()
+
+	if err != nil {
+		//log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+	}
+
+	defer db.Close()
 
 }
 
@@ -86,10 +145,6 @@ func checkIfAuth(w http.ResponseWriter, req *http.Request) {
 	//	http.Redirect(w, req, "/auth", http.StatusSeeOther)
 	//}
 	//session.Save(req, w)
-}
-
-func apiRouters() {
-	router.HandleFunc("/api/login", apiLogin)
 }
 
 func apiLogin(w http.ResponseWriter, req *http.Request) {
