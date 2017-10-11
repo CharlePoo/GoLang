@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"text/template"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
@@ -32,12 +33,13 @@ type year struct {
 }
 
 type UserDetails struct {
-	ID        int32
-	FirstName string
-	LastName  string
-	Email     string
-	Password  string
-	Age       int32
+	ID          int32
+	FirstName   string
+	LastName    string
+	Email       string
+	Password    string
+	BirthDate   time.Time
+	CreatedDate time.Time
 }
 
 type M map[string]interface{}
@@ -81,7 +83,7 @@ func CheckPasswordHash(password, hash string) bool {
 func openDB() *sql.DB {
 
 	db, err := sql.Open("mysql",
-		"root:myPassw0rd@tcp(127.0.0.1:3306)/myFile")
+		"root:myPassw0rd@tcp(127.0.0.1:3306)/myFile?parseTime=true")
 	err = db.Ping()
 	if err != nil {
 		log.Fatal(err)
@@ -91,34 +93,111 @@ func openDB() *sql.DB {
 }
 
 func apiRouters() {
-	router.HandleFunc("/api/login", apiLogin)
+	//router.HandleFunc("/api/login", apiLogin)
 	router.HandleFunc("/api/register", CreateUserEndPoint).Methods("POST")
-	router.HandleFunc("/api/register", CreateUserEndPoint).Methods("POST")
+	router.HandleFunc("/api/login", LoginEndPoint).Methods("POST")
 }
 
 func CreateUserEndPoint(w http.ResponseWriter, req *http.Request) {
 	var uDetails UserDetails
 	_ = json.NewDecoder(req.Body).Decode(&uDetails)
-	uDetails.ID = 1
-	uDetails.Age = 2
-	fmt.Println(uDetails.FirstName)
+
 	//people = append(people, person)
 	//json.NewEncoder(w).Encode(people)
+	temp := getUserByEmail(uDetails.Email)
 
-	hash, _ := HashPassword(uDetails.Password)
+	if temp.FirstName == "" {
+		passwordHash, _ := HashPassword(uDetails.Password)
+		fmt.Println(passwordHash)
+		db := openDB()
+		insert, err := db.Query("INSERT INTO user(FirstName,LastName,Email,BirthDate,Password,CreatedDate) VALUES(?, ?, ?, ?, ?, NOW() )", uDetails.FirstName, uDetails.LastName, uDetails.Email, uDetails.BirthDate, string(passwordHash))
+		defer insert.Close()
+		defer db.Close()
+		if err != nil {
+			//log.Println(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		uDetails = getUserByEmail(uDetails.Email)
+		session, err := store.Get(req, "login")
+		session.Values["userDetails"] = uDetails
+		session.Save(req, w)
+	}
+
+	json.NewEncoder(w).Encode(uDetails)
+}
+
+func LoginEndPoint(w http.ResponseWriter, req *http.Request) {
+	var uDetails UserDetails
+	_ = json.NewDecoder(req.Body).Decode(&uDetails)
+	//uDetails = getUserByEmail(uDetails.Email)
+	_tempPassword := uDetails.Password
 
 	db := openDB()
-	insert, err := db.Query("INSERT INTO user(ID,FirstName,LastName,Email,Age) VALUES(?, ?, ?, ?, ?  )", 3, uDetails.FirstName, uDetails.LastName, uDetails.Email, hash, 0)
-	defer insert.Close()
-
+	rows, err := db.Query("select ID,FirstName,LastName, BirthDate, CreatedDate, Password from user where Email=?", uDetails.Email)
 	if err != nil {
-		//log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Fatal(err)
+	}
 
+	defer rows.Close()
+	for rows.Next() {
+		err := rows.Scan(&uDetails.ID, &uDetails.FirstName, &uDetails.LastName, &uDetails.BirthDate, &uDetails.CreatedDate, &uDetails.Password)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	err = rows.Err()
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	defer db.Close()
 
+	if !CheckPasswordHash(_tempPassword, uDetails.Password) {
+		fmt.Println("wrong password")
+		return
+	}
+
+	session, err := store.Get(req, "login")
+
+	if err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	session.Values["userDetails"] = uDetails
+	session.Save(req, w)
+	json.NewEncoder(w).Encode(uDetails)
+}
+
+func getUserByEmail(email string) UserDetails {
+	db := openDB()
+	rows, err := db.Query("select ID,FirstName,LastName, BirthDate, CreatedDate from user where Email=?", email)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var uDetails UserDetails
+
+	defer rows.Close()
+	for rows.Next() {
+		err := rows.Scan(&uDetails.ID, &uDetails.FirstName, &uDetails.LastName, &uDetails.BirthDate, &uDetails.CreatedDate)
+		uDetails.Email = email
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	err = rows.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer db.Close()
+	return uDetails
 }
 
 func checkIfAuth(w http.ResponseWriter, req *http.Request) {

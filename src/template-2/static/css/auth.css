@@ -2,7 +2,9 @@
     width: 60px;
 }
 
-
+.password-confirm-error{
+    color: red;
+}
 
 .input-invalid {
     color: red;
@@ -10,4 +12,8 @@
 
 form.ng-invalid{
     border: none;
+}
+
+.email-invalid{
+    border-color: red;
 }

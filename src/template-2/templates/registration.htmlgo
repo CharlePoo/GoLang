@@ -1,6 +1,14 @@
 {{define "registration"}}
 
+    
+
     <form id="registration" name="myForm" ng-controller="ctrlReg" novalidate class="form-horizontal">
+        <div class="container">
+            <div id="alertReg" class="alert alert-danger">
+                <strong>Failed!</strong> Email is already in use.
+            </div>
+        </div>
+
         <div class="form-group">
             <label for="inputFirstname" class="col-sm-3 control-label">First Name <span class="input-invalid" ng-show="myForm.FirstName.$error.required">(Required)</span></label>
             <div class="col-sm-10">
@@ -14,9 +22,12 @@
             </div>
         </div>
         <div class="form-group">
-            <label for="inputEmail3" class="col-sm-3 control-label">Email <span class="input-invalid" ng-show="myForm.Email.$error.required">(Required)</span></label>
+            <label for="inputEmail" class="col-sm-3 control-label">Email 
+                <span class="input-invalid" ng-show="myForm.Email.$error.required">(Required)</span>
+                <span class="input-invalid" ng-show="myForm.Email.$error.email">(Not valid email!)</span>
+            </label>
             <div class="col-sm-10">
-                <input type="email" name="Email" class="form-control" id="inputEmail3" required ng-model="R.Email" placeholder="Email">
+                <input type="email" name="Email" class="form-control" id="inputEmail" required ng-model="R.Email" placeholder="Email" data-toggle="tooltip" data-placement="left" title="Email already exist!" />
             </div>
         </div>
         <div class="form-group">
@@ -27,9 +38,12 @@
             
         </div>
         <div class="form-group">
-            <label for="inputPassword3" class="col-sm-3 control-label">Password <span class="input-invalid" ng-show="myForm.Password.$error.required">(Required)</span></label>
+            <label for="inputPassword3" class="col-sm-4 control-label">Password 
+                <span class="input-invalid" ng-show="myForm.Password.$error.required">(Required)</span>
+                <span id="confirm-password-error" class="input-invalid" ng-show="(R.Password != '' && R.ConfirmPassword != '' && R.Password != R.ConfirmPassword)">(Password not match!)</span>
+            </label>
             <div class="col-sm-10">
-                <input type="password" name="Password" class="form-control" ng-model="R.Password" required id="inputPassword3" placeholder="Password">
+                <input type="password" name="Password" class="form-control" ng-model="R.Password" required id="inputPassword3" placeholder="Password"  />
             </div>
         </div>
         <div class="form-group">

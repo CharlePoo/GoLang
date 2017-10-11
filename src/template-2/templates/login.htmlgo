@@ -7,8 +7,12 @@
         <link rel="stylesheet" href="/static/jquery-ui-1.12.1/jquery-ui.min.css">
 
         <script src="/static/js/jquery.min.js"></script>
-        <script src="/static/jquery-ui-1.12.1/jquery-ui.min.js"></script>
+        <!--<script src="/static/jquery-ui-1.12.1/jquery-ui.min.js"></script>-->
         <script src="/static/js/angular.min.js"></script>
+        
+        <script src="/static/js/popper.min.js"></script>
+        <script src="/static/js/bootstrap.min.js"></script>
+
         <script src="/static/js/auth.js"></script>
         <script src="/static/js/common.js"></script>
     </head>
