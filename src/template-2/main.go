@@ -63,7 +63,8 @@ func main() {
 
 	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	router.HandleFunc("/", foo)
-	router.HandleFunc("/auth", login)
+	router.HandleFunc("/auth", authentication)
+	router.HandleFunc("/logout", pageLogout)
 	apiRouters()
 
 	http.ListenAndServe(":8080", router)
@@ -173,6 +174,36 @@ func LoginEndPoint(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(uDetails)
 }
 
+func LogoutEndPoint(w http.ResponseWriter, req *http.Request) {
+	session, err := store.Get(req, "login")
+
+	if err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var uDetails UserDetails
+	session.Values["userDetails"] = uDetails
+	session.Save(req, w)
+}
+
+func pageLogout(w http.ResponseWriter, req *http.Request) {
+	session, err := store.Get(req, "login")
+
+	if err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var uDetails UserDetails
+	uDetails.ID = 0
+	session.Values["userDetails"] = uDetails
+	session.Save(req, w)
+	http.Redirect(w, req, "/auth", http.StatusSeeOther)
+}
+
 func getUserByEmail(email string) UserDetails {
 	db := openDB()
 	rows, err := db.Query("select ID,FirstName,LastName, BirthDate, CreatedDate from user where Email=?", email)
@@ -213,25 +244,27 @@ func checkIfAuth(w http.ResponseWriter, req *http.Request) {
 	val := session.Values["userDetails"]
 	//var details = &UserDetails{}
 	details, ok := val.(*UserDetails)
+	log.Println(ok)
 	if !ok {
 		if details == nil {
 			http.Redirect(w, req, "/auth", http.StatusSeeOther)
+		} else if details.ID <= 0 {
+			http.Redirect(w, req, "/auth", http.StatusSeeOther)
 		}
 		//http.Redirect(w, req, "/auth", http.StatusSeeOther)
+	} else {
+		if details.ID <= 0 {
+			http.Redirect(w, req, "/auth", http.StatusSeeOther)
+		}
 	}
-
-	//if details != nil {
-	//	http.Redirect(w, req, "/auth", http.StatusSeeOther)
-	//}
-	//session.Save(req, w)
 }
 
 func apiLogin(w http.ResponseWriter, req *http.Request) {
 	//json.NewEncoder(w).Encode(people)
 }
 
-func login(w http.ResponseWriter, req *http.Request) {
-	err := tpl.ExecuteTemplate(w, "login.htmlgo", nil)
+func authentication(w http.ResponseWriter, req *http.Request) {
+	err := tpl.ExecuteTemplate(w, "auth.htmlgo", nil)
 
 	if err != nil {
 		log.Println(err)

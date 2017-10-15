@@ -53,8 +53,10 @@ appAuth.controller('ctrlLogin', function($scope, $http){
         Password: ""
     };
 
+    var alertLogin = $("#alertLogin");
+    alertLogin.hide();
     $scope.SubmitForm = function(){
-        
+        alertLogin.hide();
         $http.post("/api/login", $scope.L)
         .then(function(response) {
             //First function handles success
@@ -62,17 +64,15 @@ appAuth.controller('ctrlLogin', function($scope, $http){
             if (response.data.ID>0){
                 //$scope.R = response.data;
                 location.href = "/";
-                
             }else{
-                //alertReg.show("fade");
-                //email.addClass("email-invalid");
-                alert("invalid login!");
+                alertLogin.show();
             }
             
             console.log(response);
         }, function(response) {
             //Second function handles error
-            $scope.content = "Something went wrong";
+            //$scope.content = "Something went wrong";
+            console.error(response);
         });
     };
 });

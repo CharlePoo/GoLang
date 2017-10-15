@@ -1,32 +1,40 @@
-<!DOCTYPE html>
-<html ng-app="appAuth">
-    <head>
-        <link rel="stylesheet"  href="/static/css/bootstrap-reboot.min.css" />
-        <link rel="stylesheet"  href="/static/css/bootstrap.css" />
-        <link rel="stylesheet"  href="/static/css/auth.css" />
-        <link rel="stylesheet" href="/static/jquery-ui-1.12.1/jquery-ui.min.css">
 
-        <script src="/static/js/jquery.min.js"></script>
-        <!--<script src="/static/jquery-ui-1.12.1/jquery-ui.min.js"></script>-->
-        <script src="/static/js/angular.min.js"></script>
-        
-        <script src="/static/js/popper.min.js"></script>
-        <script src="/static/js/bootstrap.min.js"></script>
 
-        <script src="/static/js/auth.js"></script>
-        <script src="/static/js/common.js"></script>
-    </head>
-    <body>
-        <div class="row">
-            <div class="col-md-6">
-                {{template "auth" .}}
-            </div>
-            <div class="col-md-6">
-                {{template "registration" .}}
+{{define "login"}}
+
+
+    <form ng-controller="ctrlLogin" name="loginForm" class="form-horizontal">
+        <div class="container">
+            <div id="alertLogin" class="alert alert-danger">
+                <strong>Failed!</strong> Invalid login. Please provide correct Email and Password.
             </div>
         </div>
-        
-        
-    </body>
-</html>
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">Email</label>
+            <div class="col-sm-10">
+            <input type="email" class="form-control" id="inputEmail3" ng-required="true" ng-model="L.Email" placeholder="Email">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputPassword3" class="col-sm-2 control-label">Password</label>
+            <div class="col-sm-10">
+            <input type="password" class="form-control" id="inputPassword3" ng-required="true" ng-model="L.Password" placeholder="Password">
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+            <div class="checkbox">
+                <label>
+                <input type="checkbox"> Remember me
+                </label>
+            </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+            <button type="button" ng-disabled="loginForm.$invalid" ng-click="SubmitForm()" class="btn btn-default">Sign in</button>
+            </div>
+        </div>
+    </form>
 
+{{end}}
