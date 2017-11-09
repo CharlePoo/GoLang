@@ -119,5 +119,6 @@ func ListFile(path string, uDetails *UserDetails) []ItemInfo {
 		//log.Println(f.Name())
 		itemArray = append(itemArray, itemInfo)
 	}
+
 	return itemArray
 }

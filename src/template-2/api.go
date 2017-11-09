@@ -174,7 +174,7 @@ func InitializeEndPoint(w http.ResponseWriter, req *http.Request) {
 	}
 
 	ud := getSessionUserInfo(w, req)
-	//log.Println(ud)
+	log.Println(ud)
 
 	initializePage.Items = ListFile("", ud)
 
