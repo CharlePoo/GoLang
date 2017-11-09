@@ -7,7 +7,7 @@
         <!-- https://getbootstrap.com/docs/3.3/css/ -->
 
         <link rel="stylesheet"  href="/static/css/bootstrap-reboot.min.css" />
-        <link rel="stylesheet"  href="/static/css/bootstrap.css" />
+        <link rel="stylesheet"  href="/static/css/bootstrap.min.css" />
         <link rel="stylesheet" href="/static/jquery-ui-1.12.1/jquery-ui.min.css">
         <link rel="stylesheet"  href="/static/css/site.css" />
 
@@ -17,6 +17,7 @@
         <script src="/static/js/jquery.min.js"></script>
         <script src="/static/js/popper.min.js"></script>
         <script src="/static/js/bootstrap.min.js"></script>
+        <script src="/static/js/underscore-min.js"></script>
         
         
         <script src="/static/js/site.js"></script>
@@ -32,19 +33,39 @@
 
         {{template "header" .}}
 
-
+        
         
         <hr />
 
-            <div ng-controller="mainCtr">
-                {{"{{Test}}"}}
+            <div ng-controller="mainCtr" style="margin-top:50px">
+                <div class="row" rowIndex="{{ "{{r.row}}" }}" ng-repeat="r in row">
+                    <div id="0-{{ "{{r.row}}{{c.col}}" }}" class="col-md-1 f-cell desktop" indexId="{{ "{{r.row}}{{c.col}}" }}" colIndex="{{ "{{c.col}}" }}" folder-container ng-repeat="c in r.column">
+                        <div id="item-{{ "{{c.item.IdPath}}" }}" path="{{ "{{c.item.Path}}" }}" class="item-element left item" ng-if="c.item!=null" draggable="true">
+                            <img src="/static/images/ic_folder_black_24px.svg" /><br>
+                            <label>{{"{{c.item.Name}}"}}</label>
+                        </div>
+                    </div>
+                </div>
             </div>
-
         <hr />
+
+        <script id="modalTemplate" type="text/plain">
+            <div id="modal-{{"{{<%= scopeItem %>.details.IdPath}}"}}" ng-attr-title="{{"{{<%= scopeItem %>.details.Name}}"}}" class="folder-container" style="display:none" initialize-child-container>
+                <!--<p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p>-->
+                
+                <div class="row">
+                    <div class="col-md-1 f-cell" ng-repeat="item in <%= scopeItem %>.items">
+                        <div id="item-{{ "{{item.IdPath}}" }}" class="item-element left item" draggable="true" child-items>
+                            <img src="/static/images/ic_folder_black_24px.svg" /><br>
+                            <label>{{"{{item.Name}}"}}</label>
+                        </div>
+                    </div> 
+                </div>
+
+            </div>
+       </script>
 
         {{template "footer" .}}
 
-        
-        
     </body>
 </html>

@@ -6,26 +6,14 @@ import (
 	"log"
 	"net/http"
 	"text/template"
-	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 	"golang.org/x/crypto/bcrypt"
 	//"encoding/json"
-	"database/sql"
 
 	_ "github.com/go-sql-driver/mysql"
 )
-
-type UserDetails struct {
-	ID          int32
-	FirstName   string
-	LastName    string
-	Email       string
-	Password    string
-	BirthDate   time.Time
-	CreatedDate time.Time
-}
 
 type M map[string]interface{}
 
@@ -64,24 +52,6 @@ func HashPassword(password string) (string, error) {
 func CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
-}
-
-func openDB() *sql.DB {
-
-	db, err := sql.Open("mysql",
-		"root:myPassw0rd@tcp(127.0.0.1:3306)/myFile?parseTime=true")
-	err = db.Ping()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return db
-}
-
-func apiRouters() {
-	//router.HandleFunc("/api/login", apiLogin)
-	router.HandleFunc("/api/register", CreateUserEndPoint).Methods("POST")
-	router.HandleFunc("/api/login", LoginEndPoint).Methods("POST")
 }
 
 func foo(w http.ResponseWriter, req *http.Request) {

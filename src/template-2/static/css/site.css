@@ -1,0 +1,14 @@
+.f-cell{
+    border: 1px solid;
+    margin: .3px;
+    min-width: 55px;
+    min-height: 55px;
+}
+
+.left{
+    float: left;
+}
+
+.right{
+    float: right;
+}

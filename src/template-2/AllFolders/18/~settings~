@@ -1,0 +1,5 @@
+[
+    {"Name":"Folder 1","ColumnIndex":0, "RowIndex":0},
+    {"Name":"Folder 2","ColumnIndex":1, "RowIndex":2},
+    {"Name":"test file.txt","ColumnIndex":0, "RowIndex":1}
+]

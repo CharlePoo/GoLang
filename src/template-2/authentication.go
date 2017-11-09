@@ -21,6 +21,20 @@ func pageLogout(w http.ResponseWriter, req *http.Request) {
 	http.Redirect(w, req, "/auth", http.StatusSeeOther)
 }
 
+func getSessionUserInfo(w http.ResponseWriter, req *http.Request) *UserDetails {
+	session, err := store.Get(req, "login")
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+	}
+
+	val := session.Values["userDetails"]
+	//var details = &UserDetails{}
+	details, _ := val.(*UserDetails)
+	return details
+}
+
 func checkIfAuth(w http.ResponseWriter, req *http.Request) {
 	//http://www.gorillatoolkit.org/pkg/sessions
 
@@ -34,7 +48,7 @@ func checkIfAuth(w http.ResponseWriter, req *http.Request) {
 	val := session.Values["userDetails"]
 	//var details = &UserDetails{}
 	details, ok := val.(*UserDetails)
-	log.Println(ok)
+	//log.Println(details)
 	if !ok {
 		if details == nil {
 			http.Redirect(w, req, "/auth", http.StatusSeeOther)
