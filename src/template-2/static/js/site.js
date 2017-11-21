@@ -57,7 +57,7 @@ mainApp.directive('folderContainer', function ($compile,$http) {
                             .then(function(response) {
     
                                 //Add child items
-                                scope.childItems["item"+item.IdPath] = {details: item, items: response.data};
+                                scope.childItems["item"+item.IdPath] = {details: item , items: response.data};
     
                                 //console.log("child",scope);
                             }, function(response) {
@@ -76,9 +76,6 @@ mainApp.directive('folderContainer', function ($compile,$http) {
                             var newEl = angular.element(_template);
                             element.append(newEl);
                             $compile(newEl)(scope);
-    
-    
-                            console.log("#modal-"+item.IdPath);
                             setTimeout(function(){
                                 _template.dialog({
                                     resizable: false,
@@ -96,6 +93,7 @@ mainApp.directive('folderContainer', function ($compile,$http) {
                                   });
                             },100);
                         }else{
+                            alert("This is a file");
                             console.log("This is a file");
                         }
                         
@@ -121,6 +119,13 @@ mainApp.directive('folderContainer', function ($compile,$http) {
 mainApp.directive("childItems",function($compile, $http){
     return function(scope, element, attrs){
         allowDrag(scope, element, attrs);
+        var jElement = $(element);
+        jElement.on("dblclick", function(){
+            console.log(jElement.parent());
+            //scope.$parent.c.item.Name = "test";
+            //scope.$apply();
+
+        });
     };
 });
 
