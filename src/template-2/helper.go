@@ -72,6 +72,10 @@ func CopyOrRenameFile(oldPath, newPath string) {
 }
 
 func ListFile(path string, uDetails *UserDetails) []ItemInfo {
+
+	path = strings.Replace(path, "m3g", "/", -1)
+	path = strings.Replace(path, "3sp3", " ", -1)
+
 	basePath := "./AllFolders/" + strconv.Itoa(uDetails.ID) + "/" + path
 	log.Println(basePath)
 	files, err := ioutil.ReadDir(basePath)
@@ -100,11 +104,12 @@ func ListFile(path string, uDetails *UserDetails) []ItemInfo {
 		}
 
 		var itemInfo ItemInfo
-		var tempPath = strings.Replace(path+"m3g"+f.Name(), " ", "3sp3", -1) //replace space to -3sp3-
-		tempPath = strings.Replace(tempPath, "/", "m3g", -1)                 //replace slash to -m3g-
+		var tempPath = strings.Replace(path+"m3g"+f.Name(), " ", "3sp3", -1) //replace space to 3sp3
+		tempPath = strings.Replace(tempPath, "/", "m3g", -1)                 //replace slash to m3g
 		itemInfo.Name = f.Name()
 		itemInfo.IdPath = tempPath
-		itemInfo.Path = path + f.Name()
+		//itemInfo.Path = path + f.Name()
+		itemInfo.Path = tempPath
 		itemInfo.ParentId = 0
 		itemInfo.IsFolder = f.IsDir()
 

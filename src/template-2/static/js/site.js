@@ -121,9 +121,26 @@ mainApp.directive("childItems",function($compile, $http){
         allowDrag(scope, element, attrs);
         var jElement = $(element);
         jElement.on("dblclick", function(){
-            console.log(jElement.parent());
+            //console.log(jElement.parent());\
+            //console.log(scope.item.IdPath);
+            console.log(scope.$parent.c.item.IdPath);
+            console.log(JSON.stringify(scope.childItems["item"+scope.$parent.c.item.IdPath].items[0]));
+
+            $http.post("/api/getSubFiles",scope.item)
+            .then(function(response) {
+                
+                //Add child items
+                scope.childItems["item"+scope.$parent.c.item.IdPath] = {details: scope.item , items: response.data};
+
+                //console.log("child",scope);
+            }, function(response) {
+                //Second function handles error
+                //$scope.content = "Something went wrong";
+                console.log(response);
+            });
+
             //scope.$parent.c.item.Name = "test";
-            //scope.$apply();
+            scope.$apply();
 
         });
     };
