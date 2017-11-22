@@ -123,14 +123,16 @@ mainApp.directive("childItems",function($compile, $http){
         jElement.on("dblclick", function(){
             //console.log(jElement.parent());\
             //console.log(scope.item.IdPath);
-            console.log(scope.$parent.c.item.IdPath);
-            console.log(JSON.stringify(scope.childItems["item"+scope.$parent.c.item.IdPath].items[0]));
+            //console.log(scope.$parent.c.item.IdPath);
+            console.log(scope);
+            //console.log(JSON.stringify(scope.childItems["item"+scope.$parent.c.item.IdPath].items[0]));
 
             $http.post("/api/getSubFiles",scope.item)
             .then(function(response) {
                 
                 //Add child items
                 scope.childItems["item"+scope.$parent.c.item.IdPath] = {details: scope.item , items: response.data};
+                scope.parentPath = scope.item;
 
                 //console.log("child",scope);
             }, function(response) {
