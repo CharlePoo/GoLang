@@ -44,6 +44,7 @@ type ItemInfo struct {
 	ParentId       int
 	Public         bool
 	IdPath         string
+	ParentPath     string
 	Path           string
 	Name           string
 	Descritpion    string
@@ -52,6 +53,7 @@ type ItemInfo struct {
 	MaxUploadCount int
 	MaxUploadSize  int
 	IsFolder       bool
+	Items          []ItemInfo
 }
 
 type ParentChild struct {

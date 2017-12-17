@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -71,14 +72,116 @@ func CopyOrRenameFile(oldPath, newPath string) {
 	os.Rename(oldPath, newPath)
 }
 
+func FolderListFile(path string, uDetails *UserDetails) ItemInfo {
+
+	oldPath := path
+	path = strings.Replace(path, "m3g", "/", -1)
+	path = strings.Replace(path, "3sp3", " ", -1)
+
+	basePath := "./AllFolders/" + strconv.Itoa(uDetails.ID) + "/" + path
+	parentArr := strings.Split(path, "/")
+
+	var parentPath string
+
+	for index, value := range parentArr {
+		if len(parentArr) == index {
+			break
+		}
+		parentPath = parentPath + "/" + value
+	}
+
+	parentPath = convertPath(parentPath)
+
+	files, err := ioutil.ReadDir(basePath)
+
+	var folderInfo ItemInfo
+
+	filepath.Walk(basePath, func(_ string, info os.FileInfo, err error) error {
+
+		folderInfo.Name = info.Name()
+		folderInfo.IdPath = oldPath
+		//itemInfo.Path = path + f.Name()
+		folderInfo.Path = oldPath
+		folderInfo.ParentId = 0
+		folderInfo.ParentPath = parentPath
+		folderInfo.IsFolder = info.IsDir()
+		return err
+	})
+
+	if err != nil {
+		log.Println(err)
+		return folderInfo
+	}
+
+	var settings []DesktopFolderIndex
+	//var itemArray []ItemInfo
+
+	//Get json settings for desktop child folder index position
+	jsonByte, error := ioutil.ReadFile(basePath + "/~settings~")
+	if error != nil {
+		log.Println(error)
+		//return nil
+	} else {
+		json.Unmarshal(jsonByte, &settings)
+	}
+
+	for _, f := range files {
+
+		if f.Name() == "~settings~" {
+			continue
+		}
+
+		var itemInfo ItemInfo
+		//var tempPath = strings.Replace(path+"m3g"+f.Name(), " ", "3sp3", -1) //replace space to 3sp3
+		//tempPath = strings.Replace(tempPath, "/", "m3g", -1)                 //replace slash to m3g
+
+		tempPath := convertPath(path + "m3g" + f.Name())
+
+		itemInfo.Name = f.Name()
+		itemInfo.IdPath = tempPath
+		//itemInfo.Path = path + f.Name()
+		itemInfo.Path = tempPath
+		itemInfo.ParentId = 0
+		itemInfo.ParentPath = parentPath
+		itemInfo.IsFolder = f.IsDir()
+
+		for _, val := range settings {
+			if val.Name == f.Name() {
+				itemInfo.ColumnIndex = val.ColumnIndex
+				itemInfo.RowIndex = val.RowIndex
+				break
+			}
+		}
+
+		//itemArray = append(itemArray, itemInfo)
+		folderInfo.Items = append(folderInfo.Items, itemInfo)
+	}
+
+	return folderInfo
+}
+
 func ListFile(path string, uDetails *UserDetails) []ItemInfo {
 
 	path = strings.Replace(path, "m3g", "/", -1)
 	path = strings.Replace(path, "3sp3", " ", -1)
 
 	basePath := "./AllFolders/" + strconv.Itoa(uDetails.ID) + "/" + path
+	parentArr := strings.Split(path, "/")
+
+	var parentPath string
+
+	for index, value := range parentArr {
+		if len(parentArr) == index {
+			break
+		}
+		parentPath = parentPath + "/" + value
+	}
+
+	parentPath = convertPath(parentPath)
+
 	log.Println(basePath)
 	files, err := ioutil.ReadDir(basePath)
+
 	log.Println(files)
 	if err != nil {
 		log.Println(err)
@@ -104,13 +207,17 @@ func ListFile(path string, uDetails *UserDetails) []ItemInfo {
 		}
 
 		var itemInfo ItemInfo
-		var tempPath = strings.Replace(path+"m3g"+f.Name(), " ", "3sp3", -1) //replace space to 3sp3
-		tempPath = strings.Replace(tempPath, "/", "m3g", -1)                 //replace slash to m3g
+		//var tempPath = strings.Replace(path+"m3g"+f.Name(), " ", "3sp3", -1) //replace space to 3sp3
+		//tempPath = strings.Replace(tempPath, "/", "m3g", -1)                 //replace slash to m3g
+
+		tempPath := convertPath(path + "m3g" + f.Name())
+
 		itemInfo.Name = f.Name()
 		itemInfo.IdPath = tempPath
 		//itemInfo.Path = path + f.Name()
 		itemInfo.Path = tempPath
 		itemInfo.ParentId = 0
+		itemInfo.ParentPath = parentPath
 		itemInfo.IsFolder = f.IsDir()
 
 		for _, val := range settings {
@@ -126,4 +233,14 @@ func ListFile(path string, uDetails *UserDetails) []ItemInfo {
 	}
 
 	return itemArray
+}
+
+func convertPath(path string) string {
+	var tempPath = strings.Replace(path, " ", "3sp3", -1) //replace space to 3sp3
+	return strings.Replace(tempPath, "/", "m3g", -1)      //replace slash to m3g
+}
+
+func decodePath(path string) string {
+	var tempPath = strings.Replace(path, "3sp3", " ", -1) //replace space to 3sp3
+	return strings.Replace(tempPath, "m3g", "/", -1)      //replace slash to m3g
 }

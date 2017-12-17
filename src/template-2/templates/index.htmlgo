@@ -51,8 +51,11 @@
 
         <script id="modalTemplate" type="text/plain">
             <div id="modal-{{"{{<%= scopeItem %>.details.IdPath}}"}}" title="{{"{{<%= scopeItem %>.details.Name}}"}}" path="{{"{{<%= scopeItem %>.details.IdPath}}"}}" class="folder-container" style="display:none" initialize-child-container>
+            <!--<div id="modal-{{"{{<%= scopeItem %>.folderId}}"}}" title="{{"{{<%= scopeItem %>.details.Name}}"}}" path="{{"{{<%= scopeItem %>.details.IdPath}}"}}" class="folder-container" style="display:none" initialize-child-container>-->
                 <!--<p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p>-->
-                
+                <div style="margin-bottom:10px">
+                    <div style="color:blue; cursor:pointer" class="back" btn-back>Back</div>
+                </div>
                 <div class="row">
                     <div class="col-md-1 f-cell" ng-repeat="item in <%= scopeItem %>.items">
                         <div id="item-{{ "{{item.IdPath}}" }}" class="item-element left item" draggable="true" child-items>

@@ -1,3 +1,4 @@
+var folderList = [];
 var mainApp = angular.module("mainApp",[]);
 mainApp.controller("mainCtr",function($scope,$http){
     $http.get("/api/initialize")
@@ -56,8 +57,16 @@ mainApp.directive('folderContainer', function ($compile,$http) {
                             $http.post("/api/getSubFiles",item)
                             .then(function(response) {
     
+                                //console.log("item.ParentPath",item.ParentPath);
                                 //Add child items
-                                scope.childItems["item"+item.IdPath] = {details: item , items: response.data};
+                                folderList.push(response.data);
+                                scope.childItems["item"+item.IdPath] = {details: item , items: response.data, backItem: item, forwaredItem: null};
+                                scope.childItems["item"+item.IdPath+"previous"] = [];
+                                //scope.childItems["item"+item.ParentPath] = {details: item , items: response.data, backItem: item, forwaredItem: null};
+                                
+
+                                //var uniqueFolderID = Date.UTC(dtm.getFullYear(), dtm.getMonth(), dtm.getDate(),dtm.getHours(),dtm.getMinutes(),dtm.getSeconds(),dtm.getMilliseconds());var uniqueFolderID = Date.UTC(dtm.getFullYear(), dtm.getMonth(), dtm.getDate(),dtm.getHours(),dtm.getMinutes(),dtm.getSeconds(),dtm.getMilliseconds());
+                                //scope.childItems["item"+uniqueFolderID] = {folderId:uniqueFolderID, details: item, items: response.data, backItem: item, forwaredItem: null};
     
                                 //console.log("child",scope);
                             }, function(response) {
@@ -116,37 +125,99 @@ mainApp.directive('folderContainer', function ($compile,$http) {
     };
 });
 
+mainApp.directive("btnBack",function($compile,$http){
+    return function(scope,element,attrs){
+        var jElement = $(element);
+        var parentContainer = jElement.closest(".folder-container");
+        
+        var originPath = "item"+scope.c.item.IdPath;
+        console.log("originPath",originPath);
+        /*jElement.on("click",function(){
+            var prev = scope.childItems[originPath+"previous"];
+            console.log("lenght",prev[prev.length-1]);
+            $http.get("/api/getSubFilesDirectPath?path="+prev[prev.length-1])
+            .then(function(responseBack) {
+
+                prev.pop();
+                console.log("responseBack",responseBack);
+                scope.childItems[originPath] = {details: scope.item , items: responseBack.data, backItem: scope.item, forwaredItem: null};
+            }, function(response) {
+                console.log("error",response);
+            });
+
+            scope.$apply();
+        });*/
+    };
+});
+
 mainApp.directive("childItems",function($compile, $http){
     return function(scope, element, attrs){
         allowDrag(scope, element, attrs);
         var jElement = $(element);
+        var originPath = "item"+scope.$parent.c.item.IdPath;
+
+
+
         jElement.on("dblclick", function(){
-            //console.log(jElement.parent());\
-            //console.log(scope.item.IdPath);
-            //console.log(scope.$parent.c.item.IdPath);
-            console.log(scope);
-            //console.log(JSON.stringify(scope.childItems["item"+scope.$parent.c.item.IdPath].items[0]));
+            
+            if (scope.item.IsFolder){
 
-            $http.post("/api/getSubFiles",scope.item)
-            .then(function(response) {
+                var parentContainer = jElement.closest(".folder-container");
+                parentContainer.attr("previous",parentContainer.attr("path"));
                 
-                //Add child items
-                scope.childItems["item"+scope.$parent.c.item.IdPath] = {details: scope.item , items: response.data};
-                scope.parentPath = scope.item;
+    
+                scope.childItems[originPath+"previous"].push(parentContainer.attr("path"));
+                parentContainer.attr("path",scope.item.IdPath);
+                $http.post("/api/getSubFiles",scope.item)
+                .then(function(response) {
+                    //parentContainer.attr("path",response.data.IdPath);
+                    
+                    scope.childItems[originPath] = {details: scope.item , items: response.data, backItem: scope.item, forwaredItem: null};
 
-                //console.log("child",scope);
-            }, function(response) {
-                //Second function handles error
-                //$scope.content = "Something went wrong";
-                console.log(response);
-            });
+                    var btnBack = parentContainer.find(".back");
+                    if (!btnBack.is("[click]")){
+                        btnBack.attr("click","true");
+    
+                            btnBack.on("click",function(){
+                                
+                                var prev = scope.childItems[originPath+"previous"];
+                                console.log("prev",prev);
+                                console.log("lenght",prev[prev.length-1]);
+                                $http.get("/api/getSubFilesDirectPath?path="+prev[prev.length-1])
+                                .then(function(responseBack) {
+                                    console.log("responseBack",responseBack);
+                                    scope.childItems[originPath] = {details: responseBack.data , items: responseBack.data.Items, backItem: scope.item, forwaredItem: null};
+                                    prev.pop();
+                                    scope.$apply();
+                                }, function(response) {
+                                    console.log("error",response);
+                                });
+                    
+                                
+                                
+                            });
+                    }
+                    
+                    
+                    
+    
+                }, function(response) {
+                    console.log(response);
+                });
+                
 
-            //scope.$parent.c.item.Name = "test";
-            scope.$apply();
+                scope.$apply();
+            }
+            else{
+                alert("This is a file.");
+            }
 
         });
     };
 });
+
+
+
 
 mainApp.directive("initializeChildContainer",function(){
     return function(scope, element, attrs){

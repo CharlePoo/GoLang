@@ -14,6 +14,7 @@ func apiRouters() {
 	router.HandleFunc("/api/initialize", InitializeEndPoint).Methods("GET")
 	router.HandleFunc("/api/getItemsByUserIdAndParentId", GetItemsByUserIdAndItemParentEndPoint).Methods("POST")
 	router.HandleFunc("/api/getSubFiles", GetSubFilesEndPoint).Methods("POST")
+	router.HandleFunc("/api/getSubFilesDirectPath", GetSubFilesDirectPathEndPoint).Methods("GET")
 
 }
 
@@ -127,6 +128,21 @@ func GetSubFilesEndPoint(w http.ResponseWriter, req *http.Request) {
 	//itemsInfo := getItemInfo(w, req, itemInfo.Id)
 	uDetail := getSessionUserInfo(w, req)
 	itemsInfo := ListFile(itemInfo.Path, uDetail)
+
+	//log.Println(initializePage)
+	json.NewEncoder(w).Encode(itemsInfo)
+}
+
+func GetSubFilesDirectPathEndPoint(w http.ResponseWriter, req *http.Request) {
+	var itemInfo ItemInfo
+	_ = json.NewDecoder(req.Body).Decode(&itemInfo)
+
+	//itemsInfo := getItemInfo(w, req, itemInfo.Id)
+	uDetail := getSessionUserInfo(w, req)
+	fmt.Println("decode")
+	fmt.Println(req.URL.Query())
+	fmt.Println(decodePath(req.URL.Query().Get("path")))
+	itemsInfo := FolderListFile(decodePath(req.URL.Query().Get("path")), uDetail)
 
 	//log.Println(initializePage)
 	json.NewEncoder(w).Encode(itemsInfo)
