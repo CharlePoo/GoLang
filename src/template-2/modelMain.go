@@ -61,3 +61,7 @@ type ParentChild struct {
 	ParendId int32
 	ChildId  int32
 }
+
+type RenameFile struct {
+	Source, Destination string
+}

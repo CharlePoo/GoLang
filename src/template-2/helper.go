@@ -11,24 +11,33 @@ import (
 	"strings"
 )
 
-func copyFile(source, destination string) {
+func copyFile(source, destination string, uDetails *UserDetails) string {
+
+	source = "./AllFolders/" + strconv.Itoa(uDetails.ID) + source
+	destination = "./AllFolders/" + strconv.Itoa(uDetails.ID) + destination
+
 	from, err := os.Open(source)
 	if err != nil {
 		log.Fatal(err)
+		return err.Error()
 	}
 	defer from.Close()
 
 	to, err := os.OpenFile(destination, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		log.Fatal(err)
+		return err.Error()
 	}
 	defer to.Close()
 
 	_, err = io.Copy(to, from)
 	if err != nil {
 		log.Fatal(err)
+		return err.Error()
 	}
 	defer to.Close()
+
+	return "Success"
 }
 
 func CreateFolder(path string, uDetails *UserDetails, ColumnIndex, RowIndex int) bool {
@@ -68,15 +77,24 @@ func CreateFolder(path string, uDetails *UserDetails, ColumnIndex, RowIndex int)
 	//os.Rename("C:/testGoFolder/test.txt", "C:/testGoFolder/Folder 1/test.txt")
 }
 
-func CopyOrRenameFile(oldPath, newPath string) {
-	os.Rename(oldPath, newPath)
+func MoveOrRenameFile(oldPath, newPath string, uDetails *UserDetails) string {
+	oldPath = "./AllFolders/" + strconv.Itoa(uDetails.ID) + oldPath
+	newPath = "./AllFolders/" + strconv.Itoa(uDetails.ID) + newPath
+
+	err := os.Rename(oldPath, newPath)
+	if err != nil {
+		log.Println(err)
+		return err.Error()
+	}
+
+	return "Success"
 }
 
 func FolderListFile(path string, uDetails *UserDetails) ItemInfo {
 
-	oldPath := path
-	path = strings.Replace(path, "m3g", "/", -1)
-	path = strings.Replace(path, "3sp3", " ", -1)
+	//var oldPath = path
+	//path = strings.Replace(path, "m3g", "/", -1)
+	//path = strings.Replace(path, "3sp3", " ", -1)
 
 	basePath := "./AllFolders/" + strconv.Itoa(uDetails.ID) + "/" + path
 	parentArr := strings.Split(path, "/")
@@ -99,9 +117,10 @@ func FolderListFile(path string, uDetails *UserDetails) ItemInfo {
 	filepath.Walk(basePath, func(_ string, info os.FileInfo, err error) error {
 
 		folderInfo.Name = info.Name()
-		folderInfo.IdPath = oldPath
+		//folderInfo.IdPath = oldPath
+		folderInfo.IdPath = convertPath(path)
 		//itemInfo.Path = path + f.Name()
-		folderInfo.Path = oldPath
+		folderInfo.Path = path
 		folderInfo.ParentId = 0
 		folderInfo.ParentPath = parentPath
 		folderInfo.IsFolder = info.IsDir()
@@ -140,7 +159,7 @@ func FolderListFile(path string, uDetails *UserDetails) ItemInfo {
 		itemInfo.Name = f.Name()
 		itemInfo.IdPath = tempPath
 		//itemInfo.Path = path + f.Name()
-		itemInfo.Path = tempPath
+		itemInfo.Path = path + "/" + f.Name()
 		itemInfo.ParentId = 0
 		itemInfo.ParentPath = parentPath
 		itemInfo.IsFolder = f.IsDir()
@@ -207,15 +226,13 @@ func ListFile(path string, uDetails *UserDetails) []ItemInfo {
 		}
 
 		var itemInfo ItemInfo
-		//var tempPath = strings.Replace(path+"m3g"+f.Name(), " ", "3sp3", -1) //replace space to 3sp3
-		//tempPath = strings.Replace(tempPath, "/", "m3g", -1)                 //replace slash to m3g
 
 		tempPath := convertPath(path + "m3g" + f.Name())
 
 		itemInfo.Name = f.Name()
 		itemInfo.IdPath = tempPath
 		//itemInfo.Path = path + f.Name()
-		itemInfo.Path = tempPath
+		itemInfo.Path = "/" + f.Name()
 		itemInfo.ParentId = 0
 		itemInfo.ParentPath = parentPath
 		itemInfo.IsFolder = f.IsDir()

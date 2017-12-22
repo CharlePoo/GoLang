@@ -15,7 +15,35 @@ func apiRouters() {
 	router.HandleFunc("/api/getItemsByUserIdAndParentId", GetItemsByUserIdAndItemParentEndPoint).Methods("POST")
 	router.HandleFunc("/api/getSubFiles", GetSubFilesEndPoint).Methods("POST")
 	router.HandleFunc("/api/getSubFilesDirectPath", GetSubFilesDirectPathEndPoint).Methods("GET")
+	router.HandleFunc("/api/moveFile", MoveFileEndPoint).Methods("POST")
+	router.HandleFunc("/api/copyFile", CopyFileEndPoint).Methods("POST")
 
+}
+
+func CopyFileEndPoint(w http.ResponseWriter, req *http.Request) {
+	uDetail := getSessionUserInfo(w, req)
+	var fileNames *RenameFile
+	_ = json.NewDecoder(req.Body).Decode(&fileNames)
+	/*fmt.Println("old path: " + req.URL.Query().Get("source"))
+	fmt.Println("new path: " + req.URL.Query().Get("destination"))
+	w.Write([]byte(MoveOrRenameFile(req.URL.Query().Get("source"), req.URL.Query().Get("destination"), uDetail)))*/
+
+	fmt.Println("old path: " + fileNames.Source)
+	fmt.Println("new path: " + fileNames.Destination)
+	w.Write([]byte(copyFile(fileNames.Source, fileNames.Destination, uDetail)))
+}
+
+func MoveFileEndPoint(w http.ResponseWriter, req *http.Request) {
+	uDetail := getSessionUserInfo(w, req)
+	var fileNames *RenameFile
+	_ = json.NewDecoder(req.Body).Decode(&fileNames)
+	/*fmt.Println("old path: " + req.URL.Query().Get("source"))
+	fmt.Println("new path: " + req.URL.Query().Get("destination"))
+	w.Write([]byte(MoveOrRenameFile(req.URL.Query().Get("source"), req.URL.Query().Get("destination"), uDetail)))*/
+
+	fmt.Println("old path: " + fileNames.Source)
+	fmt.Println("new path: " + fileNames.Destination)
+	w.Write([]byte(MoveOrRenameFile(fileNames.Source, fileNames.Destination, uDetail)))
 }
 
 func CreateUserEndPoint(w http.ResponseWriter, req *http.Request) {
@@ -139,9 +167,6 @@ func GetSubFilesDirectPathEndPoint(w http.ResponseWriter, req *http.Request) {
 
 	//itemsInfo := getItemInfo(w, req, itemInfo.Id)
 	uDetail := getSessionUserInfo(w, req)
-	fmt.Println("decode")
-	fmt.Println(req.URL.Query())
-	fmt.Println(decodePath(req.URL.Query().Get("path")))
 	itemsInfo := FolderListFile(decodePath(req.URL.Query().Get("path")), uDetail)
 
 	//log.Println(initializePage)

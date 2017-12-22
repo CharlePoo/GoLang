@@ -40,7 +40,7 @@
             <div ng-controller="mainCtr" style="margin-top:50px">
                 <div class="row" rowIndex="{{ "{{r.row}}" }}" ng-repeat="r in row">
                     <div id="0-{{ "{{r.row}}{{c.col}}" }}" class="col-md-1 f-cell desktop" indexId="{{ "{{r.row}}{{c.col}}" }}" colIndex="{{ "{{c.col}}" }}" folder-container ng-repeat="c in r.column">
-                        <div id="item-{{ "{{c.item.IdPath}}" }}" path="{{ "{{c.item.Path}}" }}" class="item-element left item" ng-if="c.item!=null" draggable="true">
+                        <div id="item-{{ "{{c.item.IdPath}}" }}" path="{{ "{{c.item.Path}}" }}" name="{{"{{c.item.Name}}"}}" class="item-element left item" ng-if="c.item!=null" draggable="true">
                             <img src="/static/images/ic_folder_black_24px.svg" /><br>
                             <label>{{"{{c.item.Name}}"}}</label>
                         </div>
@@ -50,15 +50,14 @@
         <hr />
 
         <script id="modalTemplate" type="text/plain">
-            <div id="modal-{{"{{<%= scopeItem %>.details.IdPath}}"}}" title="{{"{{<%= scopeItem %>.details.Name}}"}}" path="{{"{{<%= scopeItem %>.details.IdPath}}"}}" class="folder-container" style="display:none" initialize-child-container>
-            <!--<div id="modal-{{"{{<%= scopeItem %>.folderId}}"}}" title="{{"{{<%= scopeItem %>.details.Name}}"}}" path="{{"{{<%= scopeItem %>.details.IdPath}}"}}" class="folder-container" style="display:none" initialize-child-container>-->
-                <!--<p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p>-->
+            <div id="modal-{{"{{<%= scopeItem %>.IdPath}}"}}" title="{{"{{<%= scopeItem %>.Name}}"}}" path="{{"{{<%= scopeItem %>.Path}}"}}" class="folder-container" style="display:none" initialize-child-container>
                 <div style="margin-bottom:10px">
                     <div style="color:blue; cursor:pointer" class="back" btn-back>Back</div>
+                    
                 </div>
                 <div class="row">
-                    <div class="col-md-1 f-cell" ng-repeat="item in <%= scopeItem %>.items">
-                        <div id="item-{{ "{{item.IdPath}}" }}" class="item-element left item" draggable="true" child-items>
+                    <div class="col-md-1 f-cell" ng-repeat="item in <%= scopeItem %>.Items">
+                        <div id="item-{{ "{{item.IdPath}}" }}" path="{{ "{{item.Path}}" }}" name="{{"{{item.Name}}"}}" class="item-element left item" draggable="true" child-items>
                             <img src="/static/images/ic_folder_black_24px.svg" /><br>
                             <label>{{"{{item.Name}}"}}</label>
                         </div>
@@ -69,6 +68,12 @@
        </script>
 
         {{template "footer" .}}
+
+        <script id="moveConfirmation" title="Empty the recycle bin?" type="text/plain">
+            <div >
+                <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
+            </div>
+        </script>
 
     </body>
 </html>

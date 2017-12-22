@@ -35,7 +35,7 @@ mainApp.directive('folderContainer', function ($compile,$http) {
     return function (scope, element, attrs){
 
         
-        allowDrop(scope, element, attrs);
+        allowDrop(scope, element, attrs,$http);
         startDragOver(scope, element, attrs);
         allowDrag(scope, element, attrs);
         
@@ -54,13 +54,15 @@ mainApp.directive('folderContainer', function ($compile,$http) {
                     jElement.find(".item-element").on( "dblclick", function() {
 
                         if (item.IsFolder){
-                            $http.post("/api/getSubFiles",item)
+                            //$http.post("/api/getSubFiles",item)
+                            $http.get("/api/getSubFilesDirectPath?path="+item.Path)
                             .then(function(response) {
     
-                                //console.log("item.ParentPath",item.ParentPath);
+                                console.log("response",response.data);
                                 //Add child items
-                                folderList.push(response.data);
-                                scope.childItems["item"+item.IdPath] = {details: item , items: response.data, backItem: item, forwaredItem: null};
+                                
+                                //scope.childItems["item"+item.IdPath] = {details: item , items: response.data.Items, backItem: item, forwaredItem: null};
+                                scope.childItems["item"+item.IdPath] = response.data;
                                 scope.childItems["item"+item.IdPath+"previous"] = [];
                                 //scope.childItems["item"+item.ParentPath] = {details: item , items: response.data, backItem: item, forwaredItem: null};
                                 
@@ -125,30 +127,7 @@ mainApp.directive('folderContainer', function ($compile,$http) {
     };
 });
 
-mainApp.directive("btnBack",function($compile,$http){
-    return function(scope,element,attrs){
-        var jElement = $(element);
-        var parentContainer = jElement.closest(".folder-container");
-        
-        var originPath = "item"+scope.c.item.IdPath;
-        console.log("originPath",originPath);
-        /*jElement.on("click",function(){
-            var prev = scope.childItems[originPath+"previous"];
-            console.log("lenght",prev[prev.length-1]);
-            $http.get("/api/getSubFilesDirectPath?path="+prev[prev.length-1])
-            .then(function(responseBack) {
 
-                prev.pop();
-                console.log("responseBack",responseBack);
-                scope.childItems[originPath] = {details: scope.item , items: responseBack.data, backItem: scope.item, forwaredItem: null};
-            }, function(response) {
-                console.log("error",response);
-            });
-
-            scope.$apply();
-        });*/
-    };
-});
 
 mainApp.directive("childItems",function($compile, $http){
     return function(scope, element, attrs){
@@ -163,16 +142,18 @@ mainApp.directive("childItems",function($compile, $http){
             if (scope.item.IsFolder){
 
                 var parentContainer = jElement.closest(".folder-container");
-                parentContainer.attr("previous",parentContainer.attr("path"));
+                //parentContainer.attr("previous",parentContainer.attr("path"));
                 
     
                 scope.childItems[originPath+"previous"].push(parentContainer.attr("path"));
-                parentContainer.attr("path",scope.item.IdPath);
-                $http.post("/api/getSubFiles",scope.item)
+                parentContainer.attr("path",scope.item.Path);
+                //$http.post("/api/getSubFiles",scope.item)
+                $http.get("/api/getSubFilesDirectPath?path="+scope.item.Path)
                 .then(function(response) {
                     //parentContainer.attr("path",response.data.IdPath);
                     
-                    scope.childItems[originPath] = {details: scope.item , items: response.data, backItem: scope.item, forwaredItem: null};
+                    //scope.childItems[originPath] = {details: scope.item , items: response.data, backItem: scope.item, forwaredItem: null};
+                    scope.childItems[originPath] = response.data;
 
                     var btnBack = parentContainer.find(".back");
                     if (!btnBack.is("[click]")){
@@ -181,25 +162,17 @@ mainApp.directive("childItems",function($compile, $http){
                             btnBack.on("click",function(){
                                 
                                 var prev = scope.childItems[originPath+"previous"];
-                                console.log("prev",prev);
-                                console.log("lenght",prev[prev.length-1]);
                                 $http.get("/api/getSubFilesDirectPath?path="+prev[prev.length-1])
                                 .then(function(responseBack) {
-                                    console.log("responseBack",responseBack);
-                                    scope.childItems[originPath] = {details: responseBack.data , items: responseBack.data.Items, backItem: scope.item, forwaredItem: null};
+                                    //scope.childItems[originPath] = {details: responseBack.data , items: responseBack.data.Items, backItem: scope.item, forwaredItem: null};
+                                    scope.childItems[originPath] = responseBack.data;
                                     prev.pop();
                                     scope.$apply();
                                 }, function(response) {
                                     console.log("error",response);
                                 });
-                    
-                                
-                                
                             });
                     }
-                    
-                    
-                    
     
                 }, function(response) {
                     console.log(response);
@@ -219,46 +192,102 @@ mainApp.directive("childItems",function($compile, $http){
 
 
 
-mainApp.directive("initializeChildContainer",function(){
+mainApp.directive("initializeChildContainer",function($http){
     return function(scope, element, attrs){
-        allowDrop(scope, element, attrs);
+        allowDrop(scope, element, attrs,$http);
         startDragOver(scope, element, attrs);
     };
 });
 
-function allowDrop(scope, element, attrs){
+function allowDrop(scope, element, attrs,$http){
     element.on("drop",function(e){
         
         e.preventDefault();
         var data = e.dataTransfer.getData("text");
         var elem = document.getElementById(data);
-        e.target.appendChild(elem);
+        
+
+        
+
+        //e.target.appendChild(elem);
         
         var $target = $(e.target);
         var $elem = $(elem);
+
+        $("#moveConfirmation").dialog({
+            resizable: false,
+            height: "auto",
+            width: 400,
+            modal: false,
+            buttons: {
+              "Copy File": function() {
+                executeMoveOrCopy(e, scope, element, attrs, $http, data, elem, "copy");
+                $( this ).dialog( "close" );
+              },
+              "Move File": function() {
+                executeMoveOrCopy(e, scope, element, attrs, $http, data, elem, "move");
+                $( this ).dialog( "close" );
+              },
+              Cancel: function() {
+                $( this ).dialog( "close" );
+              }
+            }
+          });
         
 
-        if ($target.hasClass("desktop")){
-            //do logic for changing parent id
-            var children = $target.children();
-            console.log($target.children().length);
-            if (children.length > 1 && children.hasClass("item")){
-                $elem.remove();
-            }else{
-                //logic
-            }
-        }else if ($target.closest(".folder-container").hasClass("folder-container")){
-            console.log("first");
-            //do logic for changing parent id
-            //logic for reloading folder items
-        }else if ($target.hasClass("item") || $target.closest(".item").hasClass("item")){
-            //do logic for changing parent id
-            console.log("second");
-            elem.remove();
-        }
+        
 
     });
 }
+
+function executeMoveOrCopy(e, scope, element, attrs, $http, data, elem, action){
+    var $target = $(e.target);
+    var $elem = $(elem);
+    if ($target.hasClass("desktop")){
+        //do logic for changing parent id
+        var children = $target.children();
+        console.log($target.children().length);
+        if (children.length > 1 && children.hasClass("item")){
+            $elem.remove();
+        }else{
+            //logic
+        }
+    }else if ($target.closest(".folder-container").hasClass("folder-container")){
+        console.log("first");
+        //from desktop to folder
+        //do logic for changing parent id
+        //logic for reloading folder items
+
+        //console.log("move",$elem.attr("path"))
+        //console.log("current folder",$target.closest(".folder-container").attr("path"))
+
+        var url = "";
+        if (action=="move"){
+            url = "/api/moveFile";
+        }else{
+            url = "/api/copyFile";
+        }
+
+        $http.post(url,{"Source":$elem.attr("path"), "Destination":$target.closest(".folder-container").attr("path")+"/"+$elem.attr("name")})
+        .then(function(responseBack) {
+            console.log("Move file message",responseBack)
+            if (action=="move"){
+                e.target.appendChild(elem);
+            }
+        }, function(response) {
+            console.log("error",response);
+        });
+
+
+        
+
+
+    }else if ($target.hasClass("item") || $target.closest(".item").hasClass("item")){
+        //do logic for changing parent id
+        console.log("second");
+        elem.remove();
+    }
+};
 
 function startDragOver(scope, element, attrs){
     element.on("dragover",function(e){
